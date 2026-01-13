@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pharmacy Specials</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f4f4f4;
+}
+
+.header {
+  background: #d71920;
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+
+.header h1 {
+  margin: 0;
+}
+
+.container {
+  padding: 15px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 15px;
+}
+
+.card {
+  background: white;
+  border-radius: 10px;
+  padding: 10px;
+  position: relative;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.card img {
+  width: 100%;
+  height: 120px;
+  object-fit: contain;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: 8px;
+}
+
+.size {
+  font-size: 12px;
+  color: #555;
+}
+
+.price {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #d71920;
+  color: white;
+  border-radius: 50%;
+  width: 55px;
+  height: 55px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.qty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.qty button {
+  border: none;
+  background: #25D366;
+  color: white;
+  font-size: 18px;
+  width: 30px;
+  height: 30px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.qty span {
+  font-weight: bold;
+}
+
+.order-box {
+  background: white;
+  padding: 15px;
+  margin-top: 20px;
+  border-radius: 10px;
+}
+
+.send {
+  width: 100%;
+  background: #25D366;
+  color: white;
+  padding: 15px;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>Pharmacy Specials</h1>
+  <p>Ask your pharmacist first</p>
+</div>
+
+<div class="container">
+
+  <div class="grid">
+
+    <!-- PRODUCT -->
+    <div class="card">
+      <div class="price">Only<br>R19.99</div>
+      <img src="images/disprin.png">
+      <div class="name">Disprin</div>
+      <div class="size">16 Tablets</div>
+      <div class="qty">
+        <button onclick="changeQty('Disprin 16s',19.99,-1)">−</button>
+        <span id="qty-Disprin_16s">0</span>
+        <button onclick="changeQty('Disprin 16s',19.99,1)">+</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="price">Only<br>R59.99</div>
+      <img src="images/alkafizz.png">
+      <div class="name">AlkaFizz</div>
+      <div class="size">60g</div>
+      <div class="qty">
+        <button onclick="changeQty('AlkaFizz 60g',59.99,-1)">−</button>
+        <span id="qty-AlkaFizz_60g">0</span>
+        <button onclick="changeQty('AlkaFizz 60g',59.99,1)">+</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="price">Only<br>R74.99</div>
+      <img src="images/strepsils.png">
+      <div class="name">Strepsils</div>
+      <div class="size">24 Lozenges</div>
+      <div class="qty">
+        <button onclick="changeQty('Strepsils 24s',74.99,-1)">−</button>
+        <span id="qty-Strepsils_24s">0</span>
+        <button onclick="changeQty('Strepsils 24s',74.99,1)">+</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="order-box">
+    <h3>Your Order</h3>
+    <ul id="orderList"></ul>
+    <strong id="total">Total: R0.00</strong>
+    <button class="send" onclick="sendOrder()">Send Order on WhatsApp</button>
+  </div>
+
+</div>
+
+<script>
+let order = {};
+
+function safeId(n){return n.replace(/\s+/g,"_")}
+
+function changeQty(item,price,delta){
+  if(!order[item]) order[item]={qty:0,price:price};
+  order[item].qty += delta;
+  if(order[item].qty < 0) order[item].qty = 0;
+  document.getElementById("qty-"+safeId(item)).textContent = order[item].qty;
+  render();
+}
+
+function render(){
+  let list=document.getElementById("orderList");
+  let total=0;
+  list.innerHTML="";
+  Object.entries(order).forEach(([i,d])=>{
+    if(d.qty>0){
+      let li=document.createElement("li");
+      let line=d.qty*d.price;
+      li.textContent=`${i} x${d.qty} = R${line.toFixed(2)}`;
+      list.appendChild(li);
+      total+=line;
+    }
+  });
+  document.getElementById("total").textContent="Total: R"+total.toFixed(2);
+}
+
+function sendOrder(){
+  let items=Object.entries(order).filter(([_,d])=>d.qty>0);
+  if(items.length===0){alert("Select items first");return;}
+  let msg="Hello, I would like to order:\n";
+  let total=0;
+  items.forEach(([i,d])=>{
+    let line=d.qty*d.price;
+    msg+=`- ${i} x${d.qty} = R${line.toFixed(2)}\n`;
+    total+=line;
+  });
+  msg+=`Total: R${total.toFixed(2)}`;
+  window.open("https://wa.me/27720808445?text="+encodeURIComponent(msg));
+}
+</script>
+
+</body>
+</html>
