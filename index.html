@@ -19,10 +19,6 @@ body {
   text-align: center;
 }
 
-.header h1 {
-  margin: 0;
-}
-
 .container {
   padding: 15px;
 }
@@ -94,10 +90,6 @@ body {
   cursor: pointer;
 }
 
-.qty span {
-  font-weight: bold;
-}
-
 .order-box {
   background: white;
   padding: 15px;
@@ -128,101 +120,138 @@ body {
 
 <div class="container">
 
-  <div class="grid">
+<div class="grid">
 
-    <!-- PRODUCT -->
-    <div class="card">
-      <div class="price">Only<br>R19.99</div>
-      <img src="images/disprin.png">
-      <div class="name">Disprin</div>
-      <div class="size">16 Tablets</div>
-      <div class="qty">
-        <button onclick="changeQty('Disprin 16s',19.99,-1)">−</button>
-        <span id="qty-Disprin_16s">0</span>
-        <button onclick="changeQty('Disprin 16s',19.99,1)">+</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="price">Only<br>R59.99</div>
-      <img src="images/alkafizz.png">
-      <div class="name">AlkaFizz</div>
-      <div class="size">60g</div>
-      <div class="qty">
-        <button onclick="changeQty('AlkaFizz 60g',59.99,-1)">−</button>
-        <span id="qty-AlkaFizz_60g">0</span>
-        <button onclick="changeQty('AlkaFizz 60g',59.99,1)">+</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="price">Only<br>R74.99</div>
-      <img src="images/strepsils.png">
-      <div class="name">Strepsils</div>
-      <div class="size">24 Lozenges</div>
-      <div class="qty">
-        <button onclick="changeQty('Strepsils 24s',74.99,-1)">−</button>
-        <span id="qty-Strepsils_24s">0</span>
-        <button onclick="changeQty('Strepsils 24s',74.99,1)">+</button>
-      </div>
-    </div>
-
+<!-- DISPRIN Extra Strength - 16 Tablets -->
+<div class="card">
+  <div class="price">Only<br>R19.99</div>
+  <img src="images/disprin.png">
+  <div class="name">Disprin Extra Strength</div>
+  <div class="size">16 Tablets</div>
+  <div class="qty">
+    <button onclick="changeQty('disprin',-1)">−</button>
+    <span id="qty-disprin">0</span>
+    <button onclick="changeQty('disprin',1)">+</button>
   </div>
+</div>
 
-  <div class="order-box">
-    <h3>Your Order</h3>
-    <ul id="orderList"></ul>
-    <strong id="total">Total: R0.00</strong>
-    <button class="send" onclick="sendOrder()">Send Order on WhatsApp</button>
+<!-- ALKAFIZZ Mixed Berry - 120g -->
+<div class="card">
+  <div class="price">Only<br>R59.99</div>
+  <img src="images/alkafizz.png">
+  <div class="name">AlkaFizz Mixed Berry</div>
+  <div class="size">120g</div>
+  <div class="qty">
+    <button onclick="changeQty('alkafizz',-1)">−</button>
+    <span id="qty-alkafizz">0</span>
+    <button onclick="changeQty('alkafizz',1)">+</button>
   </div>
+</div>
+
+<!-- STREPSILS Original - 24 Lozenges -->
+<div class="card">
+  <div class="price">Only<br>R74.99</div>
+  <img src="images/strepsils.png">
+  <div class="name">Strepsils Original</div>
+  <div class="size">24 Lozenges</div>
+  <div class="qty">
+    <button onclick="changeQty('strepsils',-1)">−</button>
+    <span id="qty-strepsils">0</span>
+    <button onclick="changeQty('strepsils',1)">+</button>
+  </div>
+</div>
+
+</div>
+
+<!-- DELIVERY / COLLECTION -->
+<div class="order-box">
+<h3>Order Method</h3>
+
+<label><input type="radio" name="method" value="collection" checked> Collection</label><br>
+<label><input type="radio" name="method" value="delivery"> Delivery</label>
+
+<div id="deliveryOptions" style="display:none; margin-top:10px;">
+  <input type="text" id="street" placeholder="Street address" style="width:100%; margin-bottom:6px;">
+  <input type="text" id="suburb" placeholder="Suburb" style="width:100%; margin-bottom:6px;">
+  <input type="text" id="city" placeholder="City" style="width:100%; margin-bottom:10px;">
+
+  <label><input type="radio" name="zone" value="free"> 0–5 km (Free)</label><br>
+  <label><input type="radio" name="zone" value="quote"> 5+ km (Calculated by pharmacist)</label>
+</div>
+
+<button class="send" onclick="sendOrder()">Send Order on WhatsApp</button>
+</div>
 
 </div>
 
 <script>
+const phone = "27720808445";
+
+const products = {
+  disprin: { name: "Disprin Extra Strength – 16 Tablets", price: 19.99 },
+  alkafizz: { name: "AlkaFizz Mixed Berry - 120g", price: 59.99 },
+  strepsils: { name: "Strepsils Original – 24 Lozenges", price: 74.99 }
+};
+
 let order = {};
 
-function safeId(n){return n.replace(/\s+/g,"_")}
-
-function changeQty(item,price,delta){
-  if(!order[item]) order[item]={qty:0,price:price};
-  order[item].qty += delta;
-  if(order[item].qty < 0) order[item].qty = 0;
-  document.getElementById("qty-"+safeId(item)).textContent = order[item].qty;
-  render();
+function changeQty(key, delta) {
+  order[key] = (order[key] || 0) + delta;
+  if (order[key] < 0) order[key] = 0;
+  document.getElementById("qty-" + key).innerText = order[key];
 }
 
-function render(){
-  let list=document.getElementById("orderList");
-  let total=0;
-  list.innerHTML="";
-  Object.entries(order).forEach(([i,d])=>{
-    if(d.qty>0){
-      let li=document.createElement("li");
-      let line=d.qty*d.price;
-      li.textContent=`${i} x${d.qty} = R${line.toFixed(2)}`;
-      list.appendChild(li);
-      total+=line;
+document.querySelectorAll('input[name="method"]').forEach(radio => {
+  radio.addEventListener("change", () => {
+    document.getElementById("deliveryOptions").style.display =
+      radio.value === "delivery" ? "block" : "none";
+  });
+});
+
+function sendOrder() {
+  let message = "Hello, I would like to order:\n";
+  let total = 0;
+  let hasItems = false;
+
+  for (let key in order) {
+    if (order[key] > 0) {
+      message += `- ${products[key].name} x${order[key]}\n`;
+      total += products[key].price * order[key];
+      hasItems = true;
     }
-  });
-  document.getElementById("total").textContent="Total: R"+total.toFixed(2);
-}
+  }
 
-function sendOrder(){
-  let items=Object.entries(order).filter(([_,d])=>d.qty>0);
-  if(items.length===0){alert("Select items first");return;}
-  let msg="Hello, I would like to order:\n";
-  let total=0;
-  items.forEach(([i,d])=>{
-    let line=d.qty*d.price;
-    msg+=`- ${i} x${d.qty} = R${line.toFixed(2)}\n`;
-    total+=line;
-  });
-  msg+=`Total: R${total.toFixed(2)}`;
-  window.open("https://wa.me/27720808445?text="+encodeURIComponent(msg));
+  if (!hasItems) {
+    alert("Please select at least one item.");
+    return;
+  }
+
+  const method = document.querySelector('input[name="method"]:checked').value;
+  if (method === "delivery") {
+    const street = document.getElementById("street").value.trim();
+    const suburb = document.getElementById("suburb").value.trim();
+    const city = document.getElementById("city").value.trim();
+    const zone = document.querySelector('input[name="zone"]:checked');
+
+    if (!street || !suburb || !city || !zone) {
+      alert("Please complete delivery details.");
+      return;
+    }
+
+    message += `\nDelivery address:\n${street}\n${suburb}\n${city}`;
+    message += zone.value === "free"
+      ? "\nDelivery: 0–5 km (Free)"
+      : "\nDelivery: 5+ km (Fee calculated by pharmacist)";
+  }
+
+  message += `\n\nTotal (excluding delivery if applicable): R${total.toFixed(2)}`;
+
+  window.open(
+    "https://wa.me/" + phone + "?text=" + encodeURIComponent(message),
+    "_blank"
+  );
 }
 </script>
 
 </body>
 </html>
-
-
